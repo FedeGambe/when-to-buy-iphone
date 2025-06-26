@@ -7,8 +7,8 @@ from funzioni import processa_df, trimestri_stats, prezzo_trimestri_stats, asseg
 # Lettura e preparazione dati
 # -------------------------------
 
-iphone15 = pd.read_csv("iPhone15.csv")
-iphone16 = pd.read_csv("iPhone16.csv")
+iphone15 = pd.read_csv("Dataset/iPhone15.csv")
+iphone16 = pd.read_csv("Dataset/iPhone16.csv")
 combined = pd.concat([iphone15, iphone16], ignore_index=True)
 
 stats_15 = trimestri_stats(iphone15, "iPhone15")
