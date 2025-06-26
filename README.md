@@ -1,4 +1,7 @@
 # When to buy iphone
+
+IN PROGRESS
+
 è uno programma Python che analizza e prevede l’andamento dei prezzi degli iPhone nel tempo, aiutando a individuare il momento migliore per l’acquisto. Il progetto utilizza dati storici provenienti da Keepa e integra uno scraper per monitorare i prezzi in tempo reale.
 
 ---
