@@ -17,13 +17,11 @@ def estrai_e_salva_prezzo(nome_prodotto, url):
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         df.columns = [col.strip() for col in df.columns]
-        # Se ci sono colonne vuote (da virgole extra), le rimuove
-        df = df.loc[:, ["day_start", "day_end", "price"]]
+        df = df.loc[:, ["day_start", "day_end", "price"]] # Se ci sono colonne vuote (da virgole extra), le rimuove
     else:
         df = pd.DataFrame(columns=["day_start", "day_end", "price"])
 
-    try:
-        # Scraping
+    try: # Scraping
         response = requests.get(url, headers=HEADERS)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
@@ -35,10 +33,8 @@ def estrai_e_salva_prezzo(nome_prodotto, url):
 
         whole = span_price.find("span", class_="a-price-whole").text.strip()
         fraction = span_price.find("span", class_="a-price-fraction").text.strip()
-
         prezzo_str = f"{whole.replace('.', '').replace(',', '')}.{fraction}"
         prezzo_float = float(prezzo_str)
-
         oggi = datetime.now().strftime("%d-%m-%Y")
 
         # Pulisce e normalizza
@@ -46,15 +42,18 @@ def estrai_e_salva_prezzo(nome_prodotto, url):
         df["day_end"] = df["day_end"].astype(str).str.strip()
         df["price"] = df["price"].astype(float)
 
+        #Se il DataFrame non è vuoto e il prezzo dell’ultima riga è uguale a prezzo_float
+        # Allora aggiorna solo la data di fine (day_end) dell’ultima riga, mettendo oggi, il prezzo è rimasto invariato
         if not df.empty and float(df.iloc[-1]["price"]) == prezzo_float:
             df.at[df.index[-1], "day_end"] = oggi
+        # Se il prezzo è diverso dall’ultimo registrato, allora crea una nuova riga
         else:
             new_row = {"day_start": oggi, "day_end": oggi, "price": prezzo_float}
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
         df.to_csv(csv_path, index=False)
 
-        output = f"{oggi},{oggi},{prezzo_float}"
+        output = f"Aggiunto {nome_prodotto}: {oggi},{oggi},{prezzo_float}"
         print(output)
         return output
 
