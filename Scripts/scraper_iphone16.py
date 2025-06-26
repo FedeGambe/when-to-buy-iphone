@@ -6,8 +6,8 @@ import time
 from datetime import datetime
 import os
 
-product = 'iphone16'
-csv_path = f"{product}.csv"
+product = 'iPhone16'
+csv_path = f"Dataset/{product}.csv"
 
 if os.path.exists(csv_path):
     df_price = pd.read_csv(csv_path)

@@ -9,8 +9,8 @@ products = [
 ]
 
 for product in products:
-    input_file = f"{product}_prize_raw.csv"
-    output_file = f"{product}.csv"
+    input_file = f"Dataset/{product}_prize_raw.csv"
+    output_file = f"Dataset/{product}.csv"
     if not os.path.exists(input_file):
         print(f"❌ File non trovato: {input_file}")
         continue
