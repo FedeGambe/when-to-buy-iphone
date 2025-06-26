@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-d1 = pd.read_csv("iphone15.csv")
-d2 = pd.read_csv("iphone16.csv")
+d1 = pd.read_csv("Dataset/iPhone15.csv")
+d2 = pd.read_csv("Dataset/iPhone16.csv")
 
 d1['Data'] = pd.to_datetime(d1['Data'])
 d2['Data'] = pd.to_datetime(d2['Data'])

@@ -2,9 +2,9 @@ import pandas as pd
 import plotly.express as px
 
 # Carica i dati
-d1 = pd.read_csv("iphone15.csv")
-d2 = pd.read_csv("iphone16.csv")
-d3 = pd.read_csv("iphone15.csv")
+d1 = pd.read_csv("Dataset/iPhone15.csv")
+d2 = pd.read_csv("Dataset/iPhone16.csv")
+d3 = pd.read_csv("Dataset/iPhone15.csv")
 
 # Converti le date
 d1['Data'] = pd.to_datetime(d1['Data']) 
