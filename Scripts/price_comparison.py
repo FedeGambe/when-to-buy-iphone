@@ -15,20 +15,25 @@ stats_15 = trimestri_stats(iphone15, "iPhone15")
 stats_16 = trimestri_stats(iphone16, "iPhone16")
 df_statistiche = pd.concat([stats_15, stats_16], ignore_index=True)
 
-# Ordine trimestri e aggiunta colonna Trimestre "Q..."
-ordine_trimestri = ['Q1', 'Q2', 'Q3', 'Q4']
-df_statistiche['Trimestre'] = pd.Categorical(df_statistiche['Trimestre'], categories=ordine_trimestri, ordered=True)
+# Ordine trimestri e aggiunta colonna Quadrimestre "Q..."
+ordine_quadrimestri = ['Q1', 'Q2', 'Q3', 'Q4']
+df_statistiche['Trimestre'] = pd.Categorical(df_statistiche['Trimestre'], categories=ordine_quadrimestri, ordered=True)
 # Calcolo giorno medio per trimestre per plotting 
 trimestre_to_giorni = {'Q1': (0, 90),'Q2': (91, 180),'Q3': (181, 270),'Q4': (271, 365)}
-df_statistiche['Giorni_dal_lancio'] = df_statistiche['Trimestre'].map(lambda q: sum(trimestre_to_giorni[q]) // 2)
-
+df_statistiche['Giorni_dal_lancio'] = df_statistiche['Trimestre'].map(
+    lambda q: sum(trimestre_to_giorni[q]) // 2 if pd.notna(q) else None
+)
 # Colori
 palette = {'iPhone15': 'red','iPhone16': 'blue'}
 trimestre_color = {
     'Q1': '#D1E8FF',
     'Q2': '#DFFFD1',
     'Q3': '#FFEAD1',
-    'Q4': '#F3D1FF'
+    'Q4': '#F3D1FF',
+    'Q5': '#FFD1D1',  # aggiungi un colore a piacere
+    'Q6': '#D1FFF1',
+    'Q7': '#FFF9D1',
+    'Q8': '#E1D1FF'
 }
 
 # -------------------------------
