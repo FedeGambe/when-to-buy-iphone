@@ -44,6 +44,11 @@ def trimestri_stats(df, label):
     return grouped
 
 def prezzo_trimestri_stats(df):
+    # Se 'Data' è già datetime, non serve riassegnarla!
+    if not pd.api.types.is_datetime64_any_dtype(df['Data']):
+        df = df.copy()
+        df['Data'] = pd.to_datetime(df['Data'])
+        
     cambio_prezzo = df['Prezzo'].iloc[-1] - df['Prezzo'].iloc[0]
     max_calo = df['Prezzo'].max() - df['Prezzo'].min()
     volatilita = df['Prezzo'].std()
@@ -51,9 +56,10 @@ def prezzo_trimestri_stats(df):
     return pd.Series({
         'Prezzo Iniziale': df['Prezzo'].iloc[0],
         'Prezzo Finale': df['Prezzo'].iloc[-1],
-        'Prezzo Medio Trimestre': round(df['Prezzo'].mean(),2),
-        'Variazione Totale (€)': round(cambio_prezzo,2),
-        'Variazione Totale (%)': round((cambio_prezzo / df['Prezzo'].iloc[0]) * 100 if df['Prezzo'].iloc[0] != 0 else None,2),
+        'Variazione Totale (€)': round(cambio_prezzo, 2),
+        'Variazione Totale (%)': round((cambio_prezzo / df['Prezzo'].iloc[0]) * 100 if df['Prezzo'].iloc[0] != 0 else None, 2),
+        'Prezzo Medio Trimestre': round(df['Prezzo'].mean(), 2),
         'Oscillazione Massima (€)': max_calo,
         'Volatilità (std dev)': volatilita
     })
+    
