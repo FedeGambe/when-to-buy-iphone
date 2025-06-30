@@ -4,12 +4,13 @@ from funzioni import processa_df, df_espanso
 import os
 
 products = [
+    "iPhone14",
     "iPhone15", 
     "iPhone16"
 ]
 
 for product in products:
-    input_file = f"Dataset/{product}_prize_raw.csv"
+    input_file = f"Dataset/{product}_price_raw.csv"
     output_file = f"Dataset/{product}.csv"
     if not os.path.exists(input_file):
         print(f"❌ File non trovato: {input_file}")
