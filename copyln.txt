@@ -1,0 +1,25 @@
+📱 È uscito il nuovo iPhone 17. Ma... è davvero il momento giusto per comprarlo?
+Spoiler: forse no. Ma ora c'è un modo per scoprirlo con dati alla mano.
+
+🚀 Sto lavorando a When to Buy iPhone, un progetto in Python che analizza l’andamento storico dei prezzi degli iPhone e prevede i momenti migliori per l’acquisto.
+
+Come funziona?
+
+🧩 Si parte dai dati storici di Keepa, integrati da uno scraper automatico che monitora in tempo reale i prezzi attuali su Amazon (e altri store).
+🕒 I dati vengono poi rielaborati per calcolare giorni dal lancio e trimestre di riferimento.
+📉 Da qui, analisi dei trend, pattern di ribasso e vere e proprie previsioni sui prezzi futuri, con l’aiuto di regressione e serie temporali.
+
+🛠️ Feature principali:
+
+📥 Import manuale o scraping automatico dei prezzi
+
+📊 Analisi visuale dell’andamento storico
+
+🔮 Previsioni intelligenti basate su dati reali
+
+🧠 Intuizioni che possono aiutare a risparmiare
+
+➡️ In un mondo dove ogni iPhone sembra costare sempre di più, capire quando acquistare può fare la differenza.
+
+💬 Se ti interessa il progetto o vuoi collaborare, scrivimi!
+#iPhone17 #DataScience #Python #MachineLearning #WebScraping #Amazon #WhenToBuy #TechProject #PricePrediction
