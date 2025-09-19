@@ -43,23 +43,39 @@ def trimestri_stats(df, label):
     grouped['Modello'] = label
     return grouped
 
+from sklearn.linear_model import LinearRegression
+import numpy as np
 def prezzo_trimestri_stats(df):
-    # Se 'Data' è già datetime, non serve riassegnarla!
     if not pd.api.types.is_datetime64_any_dtype(df['Data']):
         df = df.copy()
         df['Data'] = pd.to_datetime(df['Data'])
-        
-    cambio_prezzo = df['Prezzo'].iloc[-1] - df['Prezzo'].iloc[0]
-    max_calo = df['Prezzo'].max() - df['Prezzo'].min()
-    volatilita = df['Prezzo'].std()
+    
+    prezzi = df['Prezzo']
+    cambio_prezzo = prezzi.iloc[-1] - prezzi.iloc[0]
+    max_calo = prezzi.max() - prezzi.min()
+    volatilita = prezzi.std()
+    
+    # Trend lineare
+    X = np.arange(len(prezzi)).reshape(-1, 1)
+    y = prezzi.values.reshape(-1, 1)
+    model = LinearRegression().fit(X, y)
+    trend = model.coef_[0][0]
+    
+    # Giorni in crescita e in calo
+    variazioni = prezzi.diff().dropna()
+    giorni_up = (variazioni > 0).sum()
+    giorni_down = (variazioni < 0).sum()
 
     return pd.Series({
-        'Prezzo Iniziale': df['Prezzo'].iloc[0],
-        'Prezzo Finale': df['Prezzo'].iloc[-1],
-        'Variazione Totale (€)': round(cambio_prezzo, 2),
-        'Variazione Totale (%)': round((cambio_prezzo / df['Prezzo'].iloc[0]) * 100 if df['Prezzo'].iloc[0] != 0 else None, 2),
-        'Prezzo Medio Trimestre': round(df['Prezzo'].mean(), 2),
-        'Oscillazione Massima (€)': max_calo,
-        'Volatilità (std dev)': volatilita
+        #'Prezzo Medio': round(prezzi.mean(), 2),
+        'Prezzo Mediano': round(prezzi.median(), 2),
+        'Prezzo Minimo': round(prezzi.min(), 2),
+        'Prezzo Massimo': round(prezzi.max(), 2),
+        'Oscillazione Massima (€)': round(max_calo, 2),
+        'Range (%)': round((max_calo / prezzi.mean()) * 100, 2),
+        'Volatilità (std dev)': round(volatilita, 2),
+        'Trend Lineare (€/giorno)': round(trend, 4),
+        'Giorni in Crescita': giorni_up,
+        'Giorni in Calo': giorni_down
     })
     
