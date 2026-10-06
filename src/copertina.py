@@ -48,7 +48,7 @@ s = pagina.read_text(encoding="utf-8")
 i, j = s.index("/* Copertina"), s.index("/* Tabelle e grafici */")
 s = s[:i] + CSS + s[j:]
 i = s.index('<svg class="bauhaus"')
-j = s.index('<div class="info">', i)  # tutto ciò che sta tra l'inizio dell'svg e le diciture
+j = s.index('<a class="logo-cover"', i)  # tutto ciò che sta tra l'inizio dell'svg e il logo
 s = s[:i] + svg() + s[j:]
 s = re.sub(r'(<link rel="icon" type="image/svg\+xml" href=")[^"]*"', lambda m: m.group(1) + favicon_uri("orizzonte", "retro") + '"', s, count=1)
 pagina.write_text(s, encoding="utf-8")
