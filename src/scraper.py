@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 import os
+from utils.dati import DATA_DIR
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -11,7 +12,7 @@ HEADERS = {
 }
 
 def estrai_e_salva_prezzo(nome_prodotto, url):
-    csv_path = f"Dataset/{nome_prodotto}_prize_raw.csv"
+    csv_path = DATA_DIR / f"{nome_prodotto}.csv"
 
     # Caricamento CSV
     if os.path.exists(csv_path):

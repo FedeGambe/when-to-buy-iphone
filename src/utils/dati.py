@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 import pandas as pd
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
 def df_espanso(df):
     expanded_rows = []
@@ -79,3 +82,13 @@ def prezzo_trimestri_stats(df):
         'Giorni in Calo': giorni_down
     })
     
+
+
+def carica_modello(nome):
+    """Legge data/<nome>.csv (day_start, day_end, price) e restituisce una riga per giorno,
+    con Giorni_dal_lancio, Trimestre, Modello e Sconto (prezzo / prezzo di lancio - 1)."""
+    raw = pd.read_csv(DATA_DIR / f"{nome}.csv")
+    df = processa_df(pd.DataFrame(df_espanso(raw)), nome)
+    df = df.sort_values('Data').reset_index(drop=True)
+    df['Sconto'] = df['Prezzo'] / df['Prezzo'].iloc[0] - 1
+    return df
