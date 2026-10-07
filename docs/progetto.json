@@ -1,0 +1,9 @@
+{
+    "repo": "When_to_buy_iPhone",
+    "t": "Quando comprare l'iPhone",
+    "d": "Tracker dei prezzi iPhone con analisi temporale, previsioni e scraping automatico.",
+    "tags": ["Scraping", "Previsioni", "Serie storiche"],
+    "y": 2026,
+    "live": "/When_to_buy_iPhone/",
+    "img": "img/cover_verticale.svg"
+}
