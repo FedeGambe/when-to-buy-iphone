@@ -59,21 +59,49 @@ def profilo_offerte(dati, finestra=60, soglia=0.03):
 
 def variazioni_periodo(dati, freq):
     """% di variazione del prezzo per periodo ('MS' mensile, 'W' settimanale), una colonna per modello.
-    Il primo periodo e quelli dopo un buco nei dati restano NaN."""
-    return pd.DataFrame({m: df.set_index('Data')['Prezzo'].resample(freq).last().pct_change(fill_method=None) * 100
-                         for m, df in dati.items()})
+    Il primo periodo e' misurato dal prezzo di lancio; quelli dopo un buco nei dati restano NaN."""
+    def var(df):
+        ultimo = df.set_index('Data')['Prezzo'].resample(freq).last()
+        prima = ultimo.shift(1)
+        prima.iloc[0] = df['Prezzo'].iloc[0]  # solo il primo periodo parte dal lancio, i buchi restano NaN
+        return (ultimo / prima - 1) * 100
+    return pd.DataFrame({m: var(df) for m, df in dati.items()})
+
+
+ORDINE_MESI = list(range(9, 13)) + list(range(1, 9))  # l'anno di un iPhone parte a settembre
+ORDINE_SETTIMANE = list(range(36, 54)) + list(range(1, 36))
+
+
+def _orizzonti(dati):
+    """Orizzonti in anni (1, 2, ...) fino alla storia piu' lunga."""
+    return range(1, int(max((df['Data'].max() - df['Data'].min()).days for df in dati.values()) // 365) + 2)
+
+
+def _per_orizzonte(dati, freq, chiave, ordine):
+    """{anno di vita: variazione % media per `chiave` (mese/settimana), colonne in `ordine`, riga = modello};
+    la chiave N e' l'N-esimo anno di vita del modello (dal lancio): se non e' ancora arrivato a quell'anno la cella resta vuota."""
+    v = variazioni_periodo(dati, freq)
+    if freq == 'MS':  # mesi dal mese di lancio: l'anno 1 va da settembre ad agosto per tutti i modelli
+        anno = pd.DataFrame({m: ((v.index.year - df['Data'].min().year) * 12 + v.index.month - df['Data'].min().month) // 12 + 1
+                             for m, df in dati.items()}, index=v.index)
+    else:
+        anno = pd.DataFrame({m: (v.index - df['Data'].min()).days // 365 + 1 for m, df in dati.items()}, index=v.index)
+    out = {}
+    for n in _orizzonti(dati):
+        x = v.where(anno == n)
+        out[n] = x.groupby(chiave(x.index)).mean().T.reindex(columns=ordine)
+    return out
 
 
 def stagionalita_mensile(dati):
-    """Variazione % media per mese solare (righe = modello, colonne = 1..12)."""
-    v = variazioni_periodo(dati, 'MS')
-    return v.groupby(v.index.month).mean().T.reindex(columns=range(1, 13))
+    """{anno di vita: variazione % media per mese, righe = modello, colonne = mesi da settembre ad agosto}."""
+    return _per_orizzonte(dati, 'MS', lambda i: i.month, ORDINE_MESI)
 
 
 def stagionalita_settimanale(dati):
-    """Variazione % media per settimana ISO (indice 1..53), mediata sui modelli."""
-    v = variazioni_periodo(dati, 'W')
-    return v.groupby(v.index.isocalendar().week).mean().mean(axis=1)
+    """{anno di vita: variazione % media per settimana ISO da 36 a 35; righe = 'Tutti' (media sui modelli) e un modello ciascuno}."""
+    return {n: pd.concat([t.mean().rename('Tutti').to_frame().T, t.iloc[::-1]])
+            for n, t in _per_orizzonte(dati, 'W', lambda i: i.isocalendar().week.values, ORDINE_SETTIMANE).items()}
 
 
 def effetto_lancio(dati, giorni=28):

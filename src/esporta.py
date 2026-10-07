@@ -39,7 +39,7 @@ def esporta(dati):
             if j % 2 == 0:
                 html += markdown.markdown(pezzo, extensions=["tables"]).replace("<table>", '<div class="tabella"><table>').replace("</table>", "</table></div>")
             else:
-                html += "<figure>" + grafici.stile_html(figure[pezzo]).to_html(full_html=False, include_plotlyjs="cdn" if primo else False, config=grafici.CONFIG_HTML) + "</figure>"
+                html += "<figure>" + grafici.stile_html(figure[pezzo]).to_html(full_html=False, include_plotlyjs="cdn" if primo else False, config=grafici.CONFIG_HTML, post_script=grafici.POST_BOTTONI if figure[pezzo].layout.meta else None) + "</figure>"
                 primo = False
         if not parte:
             html = f'<div class="conclusione">{html}</div>'

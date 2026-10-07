@@ -1,8 +1,12 @@
 """Grafici plotly per il notebook di confronto. Ogni funzione restituisce una Figure."""
+from datetime import date
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+from . import calcoli
 
 # colori della cover (caldo, freddo) + pastelli della skill crea-pagina-html
 PALETTE = {'iPhone14': '#e8593c', 'iPhone15': '#8fc3e0', 'iPhone16': '#a6d96a', 'iPhone17': '#c9a8e8'}
@@ -80,17 +84,28 @@ def costo_attesa(curve):
 
 
 def stagionalita(mensile, settimanale):
-    fig = make_subplots(rows=2, cols=1, vertical_spacing=0.18, row_heights=[0.4, 0.6], subplot_titles=(
-        'Variazione % media del prezzo per mese', 'Variazione % media per settimana (media sui modelli)'))
-    fig.add_trace(go.Heatmap(z=mensile.values, x=MESI, y=list(mensile.index), colorscale='RdYlGn_r', zmid=0,
-                             colorbar=dict(title='%', len=0.35, y=0.85),
-                             hovertemplate='%{y} %{x}: %{z:.1f}%<extra></extra>'), row=1, col=1)
-    fig.add_trace(go.Bar(x=settimanale.index, y=settimanale.values, showlegend=False,
-                         marker_color=['#4CD97B' if v < 0 else '#FF4C4C' for v in settimanale.values]), row=2, col=1)
+    """mensile/settimanale: {anno di vita: dati} da calcoli.stagionalita_*. Bottoni (vedi POST_BOTTONI): anno di vita per
+    entrambi i grafici, 'Tutti'/modello per quello settimanale."""
+    fig = make_subplots(rows=2, cols=1, vertical_spacing=0.22, row_heights=[0.4, 0.6], subplot_titles=(
+        'Variazione % media del prezzo per mese (da settembre)', 'Variazione % media per settimana (da settembre)'))
+    ordine_mesi = [MESI[m - 1] for m in calcoli.ORDINE_MESI]
+    for i, (n, m) in enumerate(mensile.items()):
+        fig.add_trace(go.Heatmap(z=m.values, x=ordine_mesi, y=list(m.index), colorscale='RdYlGn_r', zmid=0, meta=dict(anno=i),
+                                 visible=i == 0, colorbar=dict(title='%', len=0.35, y=0.85), hoverongaps=False,
+                                 hovertemplate='%{y} %{x}: %{z:.1f}%<extra></extra>'), row=1, col=1)
+        for j, (nome, s) in enumerate(settimanale[n].iterrows()):
+            fig.add_trace(go.Bar(x=list(range(len(s))), y=s.values, showlegend=False, visible=i == 0 and j == 0, customdata=s.index,
+                                 meta=dict(anno=i, mod=j), hovertemplate='settimana %{customdata}: %{y:.1f}%<extra></extra>',
+                                 marker_color=['#4CD97B' if v < 0 else '#FF4C4C' for v in s.values]), row=2, col=1)
+    fig.update_layout(meta=dict(anni=[f'Anno {n}' for n in mensile], modelli=list(settimanale[1].index)))
+    pos = {w: i for i, w in enumerate(calcoli.ORDINE_SETTIMANE)}
     for sett, nome in ((28, 'Prime Day'), (47, 'Black Friday'), (52, 'Natale')):
-        fig.add_vline(x=sett, line_dash='dot', line_color='gray', annotation_text=nome, row=2, col=1)
-    fig.update_xaxes(title_text='Settimana ISO', row=2, col=1)
-    return fig.update_layout(template=TEMPLATE, height=750)
+        fig.add_vline(x=pos[sett], line_dash='dot', line_color='gray', annotation_text=nome, row=2, col=1)
+    # un tick per mese, sulla prima settimana del mese (giovedi' della settimana ISO, come nel resto dell'analisi)
+    mese = [date.fromisocalendar(2026, w, 4).month for w in calcoli.ORDINE_SETTIMANE]
+    tick = [i for i, m in enumerate(mese) if i == 0 or m != mese[i - 1]]
+    fig.update_xaxes(title_text='Mese', title_standoff=22, tickvals=tick, ticktext=[MESI[mese[i] - 1] for i in tick], row=2, col=1)
+    return fig.update_layout(template=TEMPLATE, height=750, margin=dict(b=110))
 
 
 def offerte(profilo):
@@ -116,6 +131,39 @@ def effetto_lancio(finestre):
 
 CONFIG_HTML = dict(displaylogo=False, responsive=True, displayModeBar='hover',
                    modeBarButtonsToRemove=['select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d'])
+
+
+# bottoni tondi (classe .gruppo della pagina) sopra il grafico: uno per etichetta in layout.meta, mostrano le tracce 2i e 2i+1
+POST_BOTTONI = """
+var gd = document.getElementById('{plot_id}'), sel = [0, 0], gruppi = [];
+function mostra() {
+  gruppi.forEach(function (g, k) { g.querySelectorAll('button').forEach(function (b, i) { b.className = i === sel[k] ? 'on' : ''; }); });
+  Plotly.restyle(gd, {visible: gd.data.map(function (t) {
+    return t.meta.anno === sel[0] && (t.meta.mod === undefined || t.meta.mod === sel[1]); })});
+}
+function gruppo(etichetta, nomi, k, tra) {
+  var g = document.createElement('div'), e = document.createElement('span');
+  g.className = 'gruppo'; g.style.marginBottom = '8px'; e.className = 'et'; e.textContent = etichetta; g.appendChild(e);
+  nomi.forEach(function (nome, i) {
+    var b = document.createElement('button'); b.textContent = nome; b.onclick = function () { sel[k] = i; mostra(); };
+    g.appendChild(b);
+  });
+  gruppi.push(g);
+  if (!tra || gd.clientWidth < 700) {  // schermi stretti: i bottoni vanno a capo, restano sopra il grafico
+    gd.parentNode.insertBefore(g, gd); return; }
+  // tra i due grafici: sopra il titolo del secondo, allineato al suo asse
+  gd.parentNode.style.position = 'relative'; g.style.position = 'absolute'; g.style.zIndex = 5; g.style.margin = 0;
+  gd.parentNode.appendChild(g);
+  function posiziona() {
+    var f = gd._fullLayout; if (!f) return;
+    g.style.left = f._size.l + 'px'; g.style.top = (f._size.t + (1 - f.yaxis2.domain[1]) * f._size.h - 36) + 'px';
+  }
+  gd.on('plotly_afterplot', posiziona); posiziona();
+}
+gruppo('Anno di vita', gd.layout.meta.anni, 0);
+gruppo('Grafico settimanale', gd.layout.meta.modelli, 1, true);
+mostra();
+"""
 
 
 def stile_html(fig):
