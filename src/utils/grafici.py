@@ -4,7 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-PALETTE = {'iPhone14': '#FFA500', 'iPhone15': '#FF4C4C', 'iPhone16': '#4CA3FF', 'iPhone17': '#4CD97B'}
+# colori della cover (caldo, freddo) + pastelli della skill crea-pagina-html
+PALETTE = {'iPhone14': '#e8593c', 'iPhone15': '#8fc3e0', 'iPhone16': '#a6d96a', 'iPhone17': '#c9a8e8'}
 TRIMESTRI = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8']
 GIORNI_TRIMESTRE = {'T1': (0, 90), 'T2': (91, 180), 'T3': (181, 270), 'T4': (271, 365),
                     'T5': (366, 455), 'T6': (456, 545), 'T7': (546, 635), 'T8': (636, 730)}
@@ -110,4 +111,22 @@ def effetto_lancio(finestre):
     fig.update_layout(title='Prezzo del modello precedente intorno al lancio del successivo',
                       xaxis_title='Giorni dal lancio del nuovo modello', yaxis_title='Variazione dal primo giorno (%)',
                       template=TEMPLATE, height=500)
+    return fig
+
+
+CONFIG_HTML = dict(displaylogo=False, responsive=True, displayModeBar='hover',
+                   modeBarButtonsToRemove=['select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d'])
+
+
+def stile_html(fig):
+    """Layout unico per la pagina docs/index.html (skill crea-pagina-html): sfondo trasparente, testo chiaro, legenda sotto."""
+    testo = '#d9ccaf'
+    fig.update_layout(template='none', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                      font=dict(family='ui-monospace, Consolas, monospace', size=11, color=testo),
+                      legend=dict(orientation='h', y=-.18), hovermode='x unified' if all(t.type == 'scatter' for t in fig.data) else 'closest',
+                      hoverlabel=dict(bgcolor='#0a1018', bordercolor='#d9ccaf', font=dict(color='#efe3c8')),
+                      modebar=dict(orientation='h', bgcolor='rgba(0,0,0,0)', color=testo, activecolor='#efe3c8'))
+    fig.update_xaxes(gridcolor='rgba(255,255,255,.1)', zeroline=False, linecolor='rgba(255,255,255,.2)')
+    fig.update_yaxes(gridcolor='rgba(255,255,255,.1)', zeroline=False, linecolor='rgba(255,255,255,.2)')
+    fig.update_traces(selector=dict(type='scatter'), line_width=2.4)
     return fig
